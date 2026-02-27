@@ -1,16 +1,22 @@
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { listEmotions, AdminEmotion } from '@/api/admin-api'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { listEmotions, deleteEmotion, AdminEmotion } from '@/api/admin-api'
 import Pagination from '@/components/Pagination'
 
 export default function EmotionsPage() {
   const [page, setPage] = useState(1)
   const [poemId, setPoemId] = useState('')
   const [userId, setUserId] = useState('')
+  const qc = useQueryClient()
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin-emotions', page, poemId, userId],
     queryFn: () => listEmotions({ page, limit: 20, poem_id: poemId, user_id: userId }),
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => deleteEmotion(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-emotions'] }),
   })
 
   return (
@@ -39,7 +45,7 @@ export default function EmotionsPage() {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 text-gray-600 border-b">
                 <tr>
-                  {['User', 'Poem', 'Emotion', 'Date'].map((h) => (
+                  {['User', 'Poem', 'Emotion', 'Date', 'Actions'].map((h) => (
                     <th key={h} className="px-4 py-3 text-left font-medium">{h}</th>
                   ))}
                 </tr>
@@ -56,6 +62,18 @@ export default function EmotionsPage() {
                     </td>
                     <td className="px-4 py-3 text-gray-500">
                       {new Date(e.created_at).toLocaleDateString()}
+                    </td>
+                    <td className="px-4 py-3">
+                      <button
+                        onClick={() => {
+                          if (confirm(`Delete emotion "${e.emotion}" by @${e.username}?`)) {
+                            deleteMutation.mutate(e.id)
+                          }
+                        }}
+                        className="text-red-500 hover:underline text-xs"
+                      >
+                        Delete
+                      </button>
                     </td>
                   </tr>
                 ))}

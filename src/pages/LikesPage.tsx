@@ -1,16 +1,22 @@
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { listLikes, AdminLike } from '@/api/admin-api'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { listLikes, deleteLike, AdminLike } from '@/api/admin-api'
 import Pagination from '@/components/Pagination'
 
 export default function LikesPage() {
   const [page, setPage] = useState(1)
   const [poemId, setPoemId] = useState('')
   const [userId, setUserId] = useState('')
+  const qc = useQueryClient()
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin-likes', page, poemId, userId],
     queryFn: () => listLikes({ page, limit: 20, poem_id: poemId, user_id: userId }),
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => deleteLike(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-likes'] }),
   })
 
   return (
@@ -39,18 +45,30 @@ export default function LikesPage() {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 text-gray-600 border-b">
                 <tr>
-                  {['User', 'Poem', 'Date'].map((h) => (
+                  {['User', 'Poem', 'Date', 'Actions'].map((h) => (
                     <th key={h} className="px-4 py-3 text-left font-medium">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody className="divide-y">
                 {data?.data.map((l: AdminLike, i: number) => (
-                  <tr key={i}>
+                  <tr key={l.poem_id + l.user_id + i}>
                     <td className="px-4 py-3">@{l.username}</td>
                     <td className="px-4 py-3 max-w-xs truncate">{l.poem_title}</td>
                     <td className="px-4 py-3 text-gray-500">
                       {new Date(l.created_at).toLocaleDateString()}
+                    </td>
+                    <td className="px-4 py-3">
+                      <button
+                        onClick={() => {
+                          if (confirm(`Delete like by @${l.username} on "${l.poem_title}"?`)) {
+                            deleteMutation.mutate((l as any).id || `${l.poem_id}_${l.user_id}`)
+                          }
+                        }}
+                        className="text-red-500 hover:underline text-xs"
+                      >
+                        Delete
+                      </button>
                     </td>
                   </tr>
                 ))}

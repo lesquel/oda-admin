@@ -1,13 +1,17 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { listPoems, changePoemStatus, deletePoem, AdminPoem } from '@/api/admin-api'
+import { listPoems, updatePoem, changePoemStatus, deletePoem, AdminPoem } from '@/api/admin-api'
 import Pagination from '@/components/Pagination'
+import Modal from '@/components/Modal'
 
 export default function PoemsPage() {
   const [page, setPage] = useState(1)
   const [q, setQ] = useState('')
   const [status, setStatus] = useState('')
   const qc = useQueryClient()
+
+  const [editPoem, setEditPoem] = useState<AdminPoem | null>(null)
+  const [form, setForm] = useState({ title: '', content: '', status: '' })
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin-poems', page, q, status],
@@ -23,6 +27,19 @@ export default function PoemsPage() {
     mutationFn: (id: string) => deletePoem(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-poems'] }),
   })
+
+  const updateMutation = useMutation({
+    mutationFn: () => updatePoem(editPoem!.id, { title: form.title, content: form.content, status: form.status }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin-poems'] })
+      setEditPoem(null)
+    },
+  })
+
+  const openEdit = (p: AdminPoem) => {
+    setForm({ title: p.title, content: '', status: p.status })
+    setEditPoem(p)
+  }
 
   return (
     <div>
@@ -78,7 +95,10 @@ export default function PoemsPage() {
                     <td className="px-4 py-3 text-gray-500">
                       {new Date(p.created_at).toLocaleDateString()}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 space-x-2">
+                      <button onClick={() => openEdit(p)} className="text-indigo-600 hover:underline text-xs">
+                        Edit
+                      </button>
                       <button
                         onClick={() => {
                           if (confirm(`Hard-delete poem "${p.title}"?`)) {
@@ -98,6 +118,49 @@ export default function PoemsPage() {
           <Pagination page={page} totalPages={data?.total_pages ?? 1} onPage={setPage} />
         </>
       )}
+
+      {/* Edit Modal */}
+      <Modal open={!!editPoem} onClose={() => setEditPoem(null)} title={`Edit: ${editPoem?.title}`}>
+        <div className="space-y-3">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+            <input
+              value={form.title}
+              onChange={(e) => setForm({ ...form, title: e.target.value })}
+              className="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Content</label>
+            <textarea
+              value={form.content}
+              onChange={(e) => setForm({ ...form, content: e.target.value })}
+              rows={6}
+              placeholder="Leave empty to keep current content"
+              className="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+            <select
+              value={form.status}
+              onChange={(e) => setForm({ ...form, status: e.target.value })}
+              className="w-full border rounded px-3 py-2 text-sm"
+            >
+              <option value="published">published</option>
+              <option value="draft">draft</option>
+            </select>
+          </div>
+          <button
+            onClick={() => updateMutation.mutate()}
+            disabled={updateMutation.isPending}
+            className="w-full bg-indigo-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50"
+          >
+            {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
+          </button>
+          {updateMutation.isError && <p className="text-red-500 text-xs mt-1">{String((updateMutation.error as any)?.response?.data?.error || (updateMutation.error as Error).message)}</p>}
+        </div>
+      </Modal>
     </div>
   )
 }

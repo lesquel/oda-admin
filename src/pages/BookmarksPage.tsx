@@ -1,16 +1,22 @@
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { listBookmarks, AdminBookmark } from '@/api/admin-api'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { listBookmarks, deleteBookmark, AdminBookmark } from '@/api/admin-api'
 import Pagination from '@/components/Pagination'
 
 export default function BookmarksPage() {
   const [page, setPage] = useState(1)
   const [poemId, setPoemId] = useState('')
   const [userId, setUserId] = useState('')
+  const qc = useQueryClient()
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin-bookmarks', page, poemId, userId],
     queryFn: () => listBookmarks({ page, limit: 20, poem_id: poemId, user_id: userId }),
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => deleteBookmark(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-bookmarks'] }),
   })
 
   return (
@@ -39,18 +45,30 @@ export default function BookmarksPage() {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 text-gray-600 border-b">
                 <tr>
-                  {['User', 'Poem', 'Date'].map((h) => (
+                  {['User', 'Poem', 'Date', 'Actions'].map((h) => (
                     <th key={h} className="px-4 py-3 text-left font-medium">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody className="divide-y">
                 {data?.data.map((b: AdminBookmark, i: number) => (
-                  <tr key={i}>
+                  <tr key={b.poem_id + b.user_id + i}>
                     <td className="px-4 py-3">@{b.username}</td>
                     <td className="px-4 py-3 max-w-xs truncate">{b.poem_title}</td>
                     <td className="px-4 py-3 text-gray-500">
                       {new Date(b.created_at).toLocaleDateString()}
+                    </td>
+                    <td className="px-4 py-3">
+                      <button
+                        onClick={() => {
+                          if (confirm(`Delete bookmark by @${b.username} on "${b.poem_title}"?`)) {
+                            deleteMutation.mutate((b as any).id || `${b.poem_id}_${b.user_id}`)
+                          }
+                        }}
+                        className="text-red-500 hover:underline text-xs"
+                      >
+                        Delete
+                      </button>
                     </td>
                   </tr>
                 ))}

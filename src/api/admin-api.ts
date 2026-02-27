@@ -106,11 +106,19 @@ export const login = (email: string, password: string) =>
 export const getStats = () =>
   apiClient.get<DashboardStats>('/admin/stats').then((r) => r.data)
 
+// ── Users ─────────────────────────────────────────────────────────────────────
+
 export const listUsers = (params: ListParams = {}) =>
   apiClient.get<Paginated<AdminUser>>('/admin/users', { params }).then((r) => r.data)
 
 export const getUser = (id: string) =>
   apiClient.get<AdminUser>(`/admin/users/${id}`).then((r) => r.data)
+
+export const createUser = (data: { email: string; username: string; password: string; name: string; role: string }) =>
+  apiClient.post('/admin/users', data).then((r) => r.data)
+
+export const updateUser = (id: string, data: { email?: string; username?: string; name?: string; bio?: string; role?: string }) =>
+  apiClient.put(`/admin/users/${id}`, data).then((r) => r.data)
 
 export const changeUserRole = (id: string, role: string) =>
   apiClient.put(`/admin/users/${id}/role`, { role }).then((r) => r.data)
@@ -118,11 +126,16 @@ export const changeUserRole = (id: string, role: string) =>
 export const deleteUser = (id: string) =>
   apiClient.delete(`/admin/users/${id}`)
 
+// ── Poems ─────────────────────────────────────────────────────────────────────
+
 export const listPoems = (params: ListParams = {}) =>
   apiClient.get<Paginated<AdminPoem>>('/admin/poems', { params }).then((r) => r.data)
 
 export const getPoem = (id: string) =>
   apiClient.get<AdminPoem>(`/admin/poems/${id}`).then((r) => r.data)
+
+export const updatePoem = (id: string, data: { title?: string; content?: string; status?: string }) =>
+  apiClient.put(`/admin/poems/${id}`, data).then((r) => r.data)
 
 export const changePoemStatus = (id: string, status: string) =>
   apiClient.put(`/admin/poems/${id}/status`, { status }).then((r) => r.data)
@@ -130,17 +143,39 @@ export const changePoemStatus = (id: string, status: string) =>
 export const deletePoem = (id: string) =>
   apiClient.delete(`/admin/poems/${id}`)
 
+// ── Likes / Bookmarks / Emotions ──────────────────────────────────────────────
+
 export const listLikes = (params: ListParams = {}) =>
   apiClient.get<Paginated<AdminLike>>('/admin/likes', { params }).then((r) => r.data)
+
+export const deleteLike = (id: string) =>
+  apiClient.delete(`/admin/likes/${id}`)
 
 export const listBookmarks = (params: ListParams = {}) =>
   apiClient.get<Paginated<AdminBookmark>>('/admin/bookmarks', { params }).then((r) => r.data)
 
+export const deleteBookmark = (id: string) =>
+  apiClient.delete(`/admin/bookmarks/${id}`)
+
 export const listEmotions = (params: ListParams = {}) =>
   apiClient.get<Paginated<AdminEmotion>>('/admin/emotions', { params }).then((r) => r.data)
 
+export const deleteEmotion = (id: string) =>
+  apiClient.delete(`/admin/emotions/${id}`)
+
+// ── Emotion Catalog ───────────────────────────────────────────────────────────
+
 export const getEmotionCatalog = () =>
   apiClient.get<EmotionCatalogEntry[]>('/admin/emotions-catalog').then((r) => r.data)
+
+export const createEmotionCatalog = (data: { slug: string; label: string; emoji: string; description: string; display_order: number }) =>
+  apiClient.post('/admin/emotions-catalog', data).then((r) => r.data)
+
+export const updateEmotionCatalog = (id: string, data: Partial<{ slug: string; label: string; emoji: string; description: string; display_order: number }>) =>
+  apiClient.put(`/admin/emotions-catalog/${id}`, data).then((r) => r.data)
+
+export const deleteEmotionCatalog = (id: string) =>
+  apiClient.delete(`/admin/emotions-catalog/${id}`)
 
 export const logout = async () => {
   try {
