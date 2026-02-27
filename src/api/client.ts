@@ -25,6 +25,15 @@ apiClient.interceptors.response.use(
   }
 )
 
-export const setToken = (token: string) => localStorage.setItem(TOKEN_KEY, token)
-export const removeToken = () => localStorage.removeItem(TOKEN_KEY)
+const REFRESH_KEY = 'admin_refresh_token'
+
+export const setToken = (token: string, refreshToken?: string) => {
+  localStorage.setItem(TOKEN_KEY, token)
+  if (refreshToken) localStorage.setItem(REFRESH_KEY, refreshToken)
+}
+export const removeToken = () => {
+  localStorage.removeItem(TOKEN_KEY)
+  localStorage.removeItem(REFRESH_KEY)
+}
 export const getToken = () => localStorage.getItem(TOKEN_KEY)
+export const getRefreshToken = () => localStorage.getItem(REFRESH_KEY)

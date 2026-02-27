@@ -129,3 +129,14 @@ export const listBookmarks = (params: ListParams = {}) =>
 
 export const listEmotions = (params: ListParams = {}) =>
   apiClient.get<Paginated<AdminEmotion>>('/admin/emotions', { params }).then((r) => r.data)
+
+export const logout = async () => {
+  try {
+    const refreshToken = localStorage.getItem('admin_refresh_token')
+    if (refreshToken) {
+      await apiClient.post('/auth/logout', { refresh_token: refreshToken })
+    }
+  } catch {
+    // best-effort
+  }
+}

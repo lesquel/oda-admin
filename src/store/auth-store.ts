@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { setToken, removeToken, getToken } from '@/api/client'
-import { login as loginApi } from '@/api/admin-api'
+import { login as loginApi, logout as logoutApi } from '@/api/admin-api'
 
 interface AuthState {
   token: string | null
@@ -21,11 +21,17 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   login: async (email, password) => {
     const data = await loginApi(email, password)
-    setToken(data.access_token)
+
+    if (data.user.role !== 'admin') {
+      throw new Error('Access denied: not an admin account')
+    }
+
+    setToken(data.access_token, data.refresh_token)
     set({ token: data.access_token, isAuthenticated: true })
   },
 
   logout: () => {
+    logoutApi()
     removeToken()
     set({ token: null, isAuthenticated: false })
   },
