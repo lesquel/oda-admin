@@ -8,6 +8,7 @@ const navItems = [
   { to: '/likes', label: 'Likes' },
   { to: '/bookmarks', label: 'Bookmarks' },
   { to: '/emotions', label: 'Emotions' },
+  { to: '/emotion-catalog', label: 'Cat. Emociones' },
 ]
 
 export default function Layout() {

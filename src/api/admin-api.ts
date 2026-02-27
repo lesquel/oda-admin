@@ -70,6 +70,15 @@ export interface AdminEmotion {
   created_at: string
 }
 
+export interface EmotionCatalogEntry {
+  id: string
+  slug: string
+  label: string
+  emoji: string
+  description: string
+  display_order: number
+}
+
 export interface Paginated<T> {
   data: T[]
   total: number
@@ -129,6 +138,9 @@ export const listBookmarks = (params: ListParams = {}) =>
 
 export const listEmotions = (params: ListParams = {}) =>
   apiClient.get<Paginated<AdminEmotion>>('/admin/emotions', { params }).then((r) => r.data)
+
+export const getEmotionCatalog = () =>
+  apiClient.get<EmotionCatalogEntry[]>('/admin/emotions-catalog').then((r) => r.data)
 
 export const logout = async () => {
   try {

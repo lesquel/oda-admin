@@ -8,6 +8,7 @@ import PoemsPage from '@/pages/PoemsPage'
 import LikesPage from '@/pages/LikesPage'
 import BookmarksPage from '@/pages/BookmarksPage'
 import EmotionsPage from '@/pages/EmotionsPage'
+import EmotionCatalogPage from '@/pages/EmotionCatalogPage'
 
 export default function App() {
   return (
@@ -22,6 +23,7 @@ export default function App() {
           <Route path="/likes" element={<LikesPage />} />
           <Route path="/bookmarks" element={<BookmarksPage />} />
           <Route path="/emotions" element={<EmotionsPage />} />
+          <Route path="/emotion-catalog" element={<EmotionCatalogPage />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
