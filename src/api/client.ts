@@ -1,39 +1,26 @@
 import axios from 'axios'
 
-const API_URL = import.meta.env.VITE_API_URL || '/api'
-const TOKEN_KEY = 'admin_token'
+export const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080'
 
-export const apiClient = axios.create({
-  baseURL: API_URL,
-  headers: { 'Content-Type': 'application/json' },
+export const client = axios.create({
+  baseURL: `${BASE_URL}/api`,
 })
 
-apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem(TOKEN_KEY)
-  if (token) config.headers.Authorization = `Bearer ${token}`
+client.interceptors.request.use((config) => {
+  const token = localStorage.getItem('admin_token')
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
   return config
 })
 
-apiClient.interceptors.response.use(
+client.interceptors.response.use(
   (res) => res,
   (err) => {
-    if (err.response?.status === 401 || err.response?.status === 403) {
-      localStorage.removeItem(TOKEN_KEY)
+    if (err.response?.status === 401) {
+      localStorage.removeItem('admin_token')
       window.location.href = '/login'
     }
     return Promise.reject(err)
   }
 )
-
-const REFRESH_KEY = 'admin_refresh_token'
-
-export const setToken = (token: string, refreshToken?: string) => {
-  localStorage.setItem(TOKEN_KEY, token)
-  if (refreshToken) localStorage.setItem(REFRESH_KEY, refreshToken)
-}
-export const removeToken = () => {
-  localStorage.removeItem(TOKEN_KEY)
-  localStorage.removeItem(REFRESH_KEY)
-}
-export const getToken = () => localStorage.getItem(TOKEN_KEY)
-export const getRefreshToken = () => localStorage.getItem(REFRESH_KEY)
