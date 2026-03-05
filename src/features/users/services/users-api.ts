@@ -1,11 +1,12 @@
 import { client } from '@/core/api/client'
+import { normalizePaginated } from '@/core/api/pagination'
 import type { PaginatedResponse } from '@/core/types/pagination'
 import type { AdminUser } from '../domain/types'
 
 export const usersApi = {
   list: async (page = 1, limit = 20): Promise<PaginatedResponse<AdminUser>> => {
     const { data } = await client.get('/admin/users', { params: { page, limit } })
-    return data
+    return normalizePaginated<AdminUser>(data, page, limit)
   },
 
   getById: async (id: string): Promise<AdminUser> => {
