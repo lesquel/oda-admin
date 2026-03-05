@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
+import { useAuthStore } from '@/features/auth/stores/auth-store'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -7,48 +7,48 @@ const router = createRouter({
     {
       path: '/login',
       name: 'login',
-      component: () => import('@/views/LoginView.vue'),
+      component: () => import('@/features/auth/views/LoginView.vue'),
       meta: { requiresAuth: false },
     },
     {
       path: '/',
-      component: () => import('@/components/Layout.vue'),
+      component: () => import('@/layout/Layout.vue'),
       meta: { requiresAuth: true },
       children: [
         {
           path: '',
           name: 'dashboard',
-          component: () => import('@/views/DashboardView.vue'),
+          component: () => import('@/features/dashboard/views/DashboardView.vue'),
         },
         {
           path: 'users',
           name: 'users',
-          component: () => import('@/views/UsersView.vue'),
+          component: () => import('@/features/users/views/UsersView.vue'),
         },
         {
           path: 'poems',
           name: 'poems',
-          component: () => import('@/views/PoemsView.vue'),
+          component: () => import('@/features/poems/views/PoemsView.vue'),
         },
         {
           path: 'emotions',
           name: 'emotions',
-          component: () => import('@/views/EmotionsView.vue'),
+          component: () => import('@/features/emotions/views/EmotionsView.vue'),
         },
         {
           path: 'emotion-catalog',
           name: 'emotion-catalog',
-          component: () => import('@/views/EmotionCatalogView.vue'),
+          component: () => import('@/features/emotion-catalog/views/EmotionCatalogView.vue'),
         },
         {
           path: 'likes',
           name: 'likes',
-          component: () => import('@/views/LikesView.vue'),
+          component: () => import('@/features/likes/views/LikesView.vue'),
         },
         {
           path: 'bookmarks',
           name: 'bookmarks',
-          component: () => import('@/views/BookmarksView.vue'),
+          component: () => import('@/features/bookmarks/views/BookmarksView.vue'),
         },
       ],
     },
