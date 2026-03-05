@@ -1,51 +1,51 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { emotionCatalogApi } from '../services/emotion-catalog-api'
-import type { EmotionCatalogItem } from '../domain/types'
+import { ref, onMounted } from "vue";
+import { emotionCatalogApi } from "../services/emotion-catalog-api";
+import type { EmotionCatalogItem } from "../domain/types";
 
-const items = ref<EmotionCatalogItem[]>([])
-const loading = ref(true)
-const error = ref('')
-const showForm = ref(false)
-const form = ref({ name: '', emoji: '', description: '' })
-const saving = ref(false)
+const items = ref<EmotionCatalogItem[]>([]);
+const loading = ref(true);
+const error = ref("");
+const showForm = ref(false);
+const form = ref({ name: "", emoji: "", description: "" });
+const saving = ref(false);
 
 async function load() {
-  loading.value = true
+  loading.value = true;
   try {
-    items.value = await emotionCatalogApi.list()
+    items.value = await emotionCatalogApi.list();
   } catch {
-    error.value = 'Failed to load emotion catalog'
+    error.value = "Failed to load emotion catalog";
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 async function create() {
-  saving.value = true
+  saving.value = true;
   try {
-    await emotionCatalogApi.create(form.value)
-    form.value = { name: '', emoji: '', description: '' }
-    showForm.value = false
-    await load()
+    await emotionCatalogApi.create(form.value);
+    form.value = { name: "", emoji: "", description: "" };
+    showForm.value = false;
+    await load();
   } catch {
-    alert('Failed to create emotion')
+    alert("Failed to create emotion");
   } finally {
-    saving.value = false
+    saving.value = false;
   }
 }
 
 async function remove(item: EmotionCatalogItem) {
-  if (!confirm(`Delete emotion "${item.name}"?`)) return
+  if (!confirm(`Delete emotion "${item.name}"?`)) return;
   try {
-    await emotionCatalogApi.remove(item.id)
-    await load()
+    await emotionCatalogApi.remove(item.id);
+    await load();
   } catch {
-    alert('Failed to delete emotion')
+    alert("Failed to delete emotion");
   }
 }
 
-onMounted(load)
+onMounted(load);
 </script>
 
 <template>
@@ -85,7 +85,7 @@ onMounted(load)
             :disabled="saving || !form.name"
             class="flex-1 bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 disabled:opacity-50 text-sm"
           >
-            {{ saving ? 'Saving...' : 'Create' }}
+            {{ saving ? "Saving..." : "Create" }}
           </button>
           <button
             @click="showForm = false"
@@ -119,8 +119,5 @@ onMounted(load)
         </button>
       </div>
     </div>
-  </div>
-</template>
-iv>
   </div>
 </template>
